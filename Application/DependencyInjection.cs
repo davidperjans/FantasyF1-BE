@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application
@@ -11,8 +12,12 @@ namespace Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // Register application services here
-            // Example: services.AddScoped<IMyService, MyService>();
+            var assembly = typeof(DependencyInjection).Assembly;
+
+            services.AddAutoMapper(assembly);
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+            services.AddValidatorsFromAssembly(assembly);
+
             return services;
         }
     }
