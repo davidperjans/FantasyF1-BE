@@ -36,8 +36,13 @@ namespace Application.Features.UserFeatures.Commands.LoginUser
             if (foundUser == null || !BCrypt.Net.BCrypt.Verify(request.Password, foundUser.PasswordHash))
                 return OperationResult<LoginUserResult>.Failure("Felaktig e-post eller lösenord");
 
+            // Update last login time
+            foundUser.LastLoginAt = DateTime.UtcNow;
+
             var token = _jwtService.GenerateJwtToken(foundUser);
             var userDto = _mapper.Map<UserDto>(foundUser);
+
+            await _unitOfWork.SaveChangesAsync();
 
             return OperationResult<LoginUserResult>.Success(new LoginUserResult
             {
