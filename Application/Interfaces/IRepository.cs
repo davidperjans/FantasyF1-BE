@@ -12,9 +12,13 @@ namespace Application.Interfaces
         Task<T?> GetByIdAsync(Guid id);
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<List<T>> FindAllAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
 
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);
+
+        IQueryable<T> Query();
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     }
 }
