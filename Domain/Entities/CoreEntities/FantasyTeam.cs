@@ -24,9 +24,10 @@ namespace Domain.Entities.CoreEntities
         // Navigation Properties
         public User User { get; set; }
         public Season Season { get; set; }
-        public ICollection<TeamDriver> TeamDrivers { get; set; }
-        public ICollection<TeamConstructor> TeamConstructors { get; set; }
+        public ICollection<TeamDriver> TeamDrivers { get; set; } = new List<TeamDriver>();
+        public ICollection<TeamConstructor> TeamConstructors { get; set; } = new List<TeamConstructor>();
         public ICollection<GameweekTeam> GameweekTeams { get; set; }
+        public ICollection<Transfer> Transfers { get; set; } = new List<Transfer>();
     }
 
 }

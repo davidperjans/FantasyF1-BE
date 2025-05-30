@@ -22,6 +22,7 @@
   <ItemGroup>
     <Folder Include="Features\ConstructorFeatures\Commands\" />
     <Folder Include="Features\FantasyTeamFeatures\Mapping\" />
+    <Folder Include="Features\TransferFeatures\Mapping\" />
     <Folder Include="Features\UserFeatures\Queries\" />
   </ItemGroup>
 
