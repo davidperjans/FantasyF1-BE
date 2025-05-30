@@ -18,6 +18,6 @@ namespace Application.Features.FantasyTeamFeatures.DTOs
         public int TransfersRemaining { get; set; }
 
         public List<TeamDriverDto> Drivers { get; set; } = new();
-        public TeamConstructorDto Constructor { get; set; } = default!;
+        public List<TeamConstructorDto> Constructors { get; set; } = default!;
     }
 }

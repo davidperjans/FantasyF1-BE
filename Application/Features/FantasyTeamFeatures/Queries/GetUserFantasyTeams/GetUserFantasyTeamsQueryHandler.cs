@@ -26,7 +26,13 @@ namespace Application.Features.FantasyTeamFeatures.Queries.GetUserFantasyTeams
             var driverRepo = _unitOfWork.Repository<Driver>();
             var constructorRepo = _unitOfWork.Repository<Constructor>();
 
-            var teams = await fantasyTeamRepo.FindAllAsync(t => t.UserId == request.UserId, cancellationToken);
+            var includes = new[] { "TeamDrivers", "TeamConstructors" };
+
+            var teams = await fantasyTeamRepo.FindAllWithIncludesAsync(
+                t => t.UserId == request.UserId,
+                includes,
+                cancellationToken
+            );
 
             var allDrivers = await driverRepo.FindAllAsync(cancellationToken: cancellationToken);
             var allConstructors = await constructorRepo.FindAllAsync(cancellationToken: cancellationToken);
@@ -40,30 +46,34 @@ namespace Application.Features.FantasyTeamFeatures.Queries.GetUserFantasyTeams
                 TotalPoints = team.TotalPoints,
                 TransfersRemaining = team.TransfersRemaining,
 
-                Drivers = team.TeamDrivers.Select(td =>
-                {
-                    var driver = allDrivers.FirstOrDefault(d => d.Id == td.DriverId)!;
-                    return new TeamDriverDto
+                Drivers = team.TeamDrivers?.Any() == true
+                    ? team.TeamDrivers.Select(td =>
                     {
-                        Id = driver.Id,
-                        FullName = $"{driver.FirstName} {driver.LastName}",
-                        Code = driver.Code,
-                        Price = td.PurchasePrice,
-                        IsCaptain = td.IsCaptain
-                    };
-                }).ToList(),
+                        var driver = allDrivers.FirstOrDefault(d => d.Id == td.DriverId);
+                        return new TeamDriverDto
+                        {
+                            Id = driver?.Id ?? Guid.Empty,
+                            FullName = driver != null ? $"{driver.FirstName} {driver.LastName}" : "Unknown Driver",
+                            Code = driver?.Code ?? "N/A",
+                            Price = td.PurchasePrice,
+                            IsCaptain = td.IsCaptain
+                        };
+                    }).ToList()
+                    : new List<TeamDriverDto>(),
 
-                Constructor = team.TeamConstructors.Select(tc =>
-                {
-                    var constructor = allConstructors.FirstOrDefault(c => c.Id == tc.ConstructorId)!;
-                    return new TeamConstructorDto
+                Constructors = team.TeamConstructors?.Any() == true
+                    ? team.TeamConstructors.Select(tc =>
                     {
-                        Id = constructor.Id,
-                        Name = constructor.Name,
-                        Price = tc.PurchasePrice
-                    };
-                }).First()
-            }).ToList();
+                        var constructor = allConstructors.FirstOrDefault(c => c.Id == tc.ConstructorId);
+                        return new TeamConstructorDto
+                        {
+                            Id = constructor?.Id ?? Guid.Empty,
+                            Name = constructor?.Name ?? "Unknown",
+                            Price = tc.PurchasePrice
+                        };
+                    }).ToList()
+                    : new List<TeamConstructorDto>()
+                }).ToList();
 
             return OperationResult<List<FantasyTeamDto>>.Success(teamDtos);
         }

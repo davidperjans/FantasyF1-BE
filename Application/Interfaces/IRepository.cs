@@ -13,6 +13,8 @@ namespace Application.Interfaces
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<List<T>> FindAllAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+        Task<List<T>> FindAllWithIncludesAsync(Expression<Func<T, bool>> predicate, string[] includes, CancellationToken cancellationToken = default);
+
 
         Task AddAsync(T entity);
         void Update(T entity);

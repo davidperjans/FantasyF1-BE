@@ -35,14 +35,17 @@ namespace Application.Features.FantasyTeamFeatures.Commands.CreateFantasyTeam
             if (existingTeams.Count >= 3)
                 return OperationResult<FantasyTeamDto>.Failure("You can only create up to 3 fantasy teams per season.");
 
+            if (existingTeams.Any(t => t.TeamName.ToLower() == request.TeamName.ToLower()))
+                return OperationResult<FantasyTeamDto>.Failure("You already have a team with this name in this season.");
+
             var selectedDrivers = await driverRepo.FindAllAsync(d => request.Drivers.Select(x => x.DriverId).Contains(d.Id), cancellationToken);
             var selectedConstructors = await constructorRepo.FindAllAsync(c => request.Constructors.Select(x => x.ConstructorId).Contains(c.Id), cancellationToken);
 
-            if (selectedDrivers.Count != 2)
-                return OperationResult<FantasyTeamDto>.Failure("You must select exactly 2 valid drivers.");
+            if (selectedDrivers.Count != 5)
+                return OperationResult<FantasyTeamDto>.Failure("You must select exactly 5 valid drivers.");
 
-            if (selectedConstructors.Count != 1)
-                return OperationResult<FantasyTeamDto>.Failure("You must select exactly 1 valid constructor.");
+            if (selectedConstructors.Count != 2)
+                return OperationResult<FantasyTeamDto>.Failure("You must select exactly 2 valid constructor.");
 
             var totalCost = selectedDrivers.Sum(d => d.CurrentPrice) + selectedConstructors.Sum(c => c.CurrentPrice);
             if (totalCost > MAX_BUDGET)
@@ -81,16 +84,20 @@ namespace Application.Features.FantasyTeamFeatures.Commands.CreateFantasyTeam
                 });
             }
 
-            // Add Constructor
-            var constructor = selectedConstructors.First();
-            team.TeamConstructors.Add(new TeamConstructor
+            // Add Constructors
+            foreach (var input in request.Constructors)
             {
-                Id = Guid.NewGuid(),
-                FantasyTeamId = team.Id,
-                ConstructorId = constructor.Id,
-                PurchasePrice = constructor.CurrentPrice,
-                AddedAt = DateTime.UtcNow
-            });
+                var constructor = selectedConstructors.First(c => c.Id == input.ConstructorId);
+
+                team.TeamConstructors.Add(new TeamConstructor
+                {
+                    Id = Guid.NewGuid(),
+                    FantasyTeamId = team.Id,
+                    ConstructorId = constructor.Id,
+                    PurchasePrice = constructor.CurrentPrice,
+                    AddedAt = DateTime.UtcNow
+                });
+            }
 
             await fantasyTeamRepo.AddAsync(team);
             await _unitOfWork.SaveChangesAsync();
@@ -116,12 +123,12 @@ namespace Application.Features.FantasyTeamFeatures.Commands.CreateFantasyTeam
                         IsCaptain = td.IsCaptain
                     };
                 }).ToList(),
-                Constructor = new TeamConstructorDto
+                Constructors = selectedConstructors.Select(c => new TeamConstructorDto
                 {
-                    Id = constructor.Id,
-                    Name = constructor.Name,
-                    Price = constructor.CurrentPrice
-                }
+                    Id = c.Id,
+                    Name = c.Name,
+                    Price = c.CurrentPrice
+                }).ToList()
             };
 
             return OperationResult<FantasyTeamDto>.Success(resultDto);

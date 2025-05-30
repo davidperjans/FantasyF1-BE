@@ -1,5 +1,7 @@
-﻿using Application.Common;
+﻿using System.Security.Claims;
+using Application.Common;
 using Application.Features.FantasyTeamFeatures.Commands.CreateFantasyTeam;
+using Application.Features.FantasyTeamFeatures.Commands.DeleteFantasyTeam;
 using Application.Features.FantasyTeamFeatures.Commands.UpdateFantasyTeam;
 using Application.Features.FantasyTeamFeatures.DTOs;
 using Application.Features.FantasyTeamFeatures.Queries.GetUserFantasyTeams;
@@ -44,6 +46,17 @@ namespace API.Controllers
 
             var result = await _mediator.Send(command);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<OperationResult<bool>>> DeleteTeam(Guid id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userId, out var currentUserId))
+                return Unauthorized();
+
+            var result = await _mediator.Send(new DeleteFantasyTeamCommand(id, currentUserId));
+            return result.IsSuccess ? Ok(result) : NotFound(result);
         }
     }
 }
