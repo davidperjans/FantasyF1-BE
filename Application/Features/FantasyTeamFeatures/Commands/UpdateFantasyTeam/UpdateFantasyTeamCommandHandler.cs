@@ -33,6 +33,11 @@ namespace Application.Features.FantasyTeamFeatures.Commands.UpdateFantasyTeam
             if (team is null)
                 return OperationResult<FantasyTeamDto>.Failure("Fantasy team not found.");
 
+            var existingTeams = await teamRepo.FindAllAsync(t => t.UserId == team.UserId && t.SeasonId == team.SeasonId && t.Id != team.Id, cancellationToken);
+
+            if (existingTeams.Any(t => t.TeamName.ToLower() == request.TeamName.ToLower()))
+                return OperationResult<FantasyTeamDto>.Failure("You already have another team with this name in this season.");
+
             var selectedDrivers = await driverRepo.FindAllAsync(d => request.Drivers.Select(x => x.DriverId).Contains(d.Id), cancellationToken);
             var selectedConstructors = await constructorRepo.FindAllAsync(c => request.Constructors.Select(x => x.ConstructorId).Contains(c.Id), cancellationToken);
 
@@ -104,7 +109,7 @@ namespace Application.Features.FantasyTeamFeatures.Commands.UpdateFantasyTeam
                         IsCaptain = td.IsCaptain
                     };
                 }).ToList(),
-                Constructor = team.TeamConstructors.Select(tc =>
+                Constructors = team.TeamConstructors.Select(tc =>
                 {
                     var c = selectedConstructors.First(x => x.Id == tc.ConstructorId);
                     return new TeamConstructorDto
@@ -113,7 +118,7 @@ namespace Application.Features.FantasyTeamFeatures.Commands.UpdateFantasyTeam
                         Name = c.Name,
                         Price = tc.PurchasePrice
                     };
-                }).First()
+                }).ToList()
             };
 
             return OperationResult<FantasyTeamDto>.Success(dto);

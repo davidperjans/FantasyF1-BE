@@ -45,6 +45,20 @@ namespace Infrastructure.Repositories
             return await query.ToListAsync(cancellationToken);
         }
 
+        public async Task<List<T>> FindAllWithIncludesAsync(Expression<Func<T, bool>> predicate, string[] includes, CancellationToken cancellationToken = default)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.ToListAsync(cancellationToken);
+        }
+
+
+
         public async Task AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
