@@ -24,6 +24,7 @@ namespace Infrastructure.Database
         public DbSet<Season> Seasons { get; set; }
         public DbSet<Race> Races { get; set; }
         public DbSet<League> Leagues { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
         public DbSet<UserLeague> UserLeagues { get; set; }
         public DbSet<TeamDriver> TeamDrivers { get; set; }
         public DbSet<TeamConstructor> TeamConstructors { get; set; }
@@ -45,6 +46,7 @@ namespace Infrastructure.Database
             modelBuilder.ApplyConfiguration(new SeasonConfiguration());
             modelBuilder.ApplyConfiguration(new RaceConfiguration());
             modelBuilder.ApplyConfiguration(new LeagueConfiguration());
+            modelBuilder.ApplyConfiguration(new TransferConfiguration());
             modelBuilder.ApplyConfiguration(new UserLeagueConfiguration());
             modelBuilder.ApplyConfiguration(new TeamDriverConfiguration());
             modelBuilder.ApplyConfiguration(new TeamConstructorConfiguration());
