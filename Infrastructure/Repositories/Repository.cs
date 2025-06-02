@@ -26,6 +26,18 @@ namespace Infrastructure.Repositories
             return await _dbSet.FindAsync(id);
         }
 
+        public async Task<T?> GetByIdWithIncludesAsync(Guid id, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet;
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
+        }
+
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
@@ -44,6 +56,20 @@ namespace Infrastructure.Repositories
 
             return await query.ToListAsync(cancellationToken);
         }
+
+        public async Task<List<T>> FindAllWithIncludesAsync(Expression<Func<T, bool>> predicate, string[] includes, CancellationToken cancellationToken = default)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.ToListAsync(cancellationToken);
+        }
+
+
 
         public async Task AddAsync(T entity)
         {

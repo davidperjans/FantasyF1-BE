@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Domain.Entities.CoreEntities;
 using Infrastructure.Database;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,9 @@ namespace Infrastructure.Repositories
         private readonly AppDbContext _context;
         private readonly Dictionary<Type, object> _repositories = new();
 
+        // Specialiserade repositories
+        private IFantasyTeamRepository? _fantasyTeamRepository;
+
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
@@ -22,6 +26,18 @@ namespace Infrastructure.Repositories
         {
             var type = typeof(T);
 
+            // Specialfall för FantasyTeam
+            if (type == typeof(FantasyTeam))
+            {
+                if (_fantasyTeamRepository == null)
+                {
+                    _fantasyTeamRepository = new FantasyTeamRepository(_context);
+                    _repositories[type] = _fantasyTeamRepository;
+                }
+                return (IRepository<T>)_repositories[type];
+            }
+
+            // Vanligt generiskt repository
             if (!_repositories.ContainsKey(type))
             {
                 var repositoryInstance = new Repository<T>(_context);
