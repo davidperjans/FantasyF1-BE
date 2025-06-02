@@ -1,4 +1,4 @@
-using Application;
+﻿using Application;
 using Infrastructure;
 using Microsoft.OpenApi.Models;
 
@@ -9,6 +9,18 @@ namespace API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
 
             // Add services to the container.
 
@@ -44,6 +56,8 @@ namespace API
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
             var app = builder.Build();
+
+            app.UseCors("AllowFrontend");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
